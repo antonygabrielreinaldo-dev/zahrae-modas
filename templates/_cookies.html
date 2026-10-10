@@ -1,0 +1,23 @@
+<div id="cookie-banner" role="region" aria-label="Aviso de cookies" hidden>
+  <p>Usamos apenas cookies essenciais para o site funcionar. <a href="{{ url_for('privacidade') }}">Saiba mais</a></p>
+  <button type="button" id="cookie-ok">Entendi</button>
+</div>
+<style>
+  #cookie-banner{position:fixed;left:1rem;bottom:1rem;z-index:90;max-width:min(26rem,calc(100% - 2rem));display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding:.9rem 1.1rem;background:#231C18;color:#F5EFE6;border:1px solid rgba(228,189,110,.35);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);font-size:.9rem;line-height:1.45}
+  #cookie-banner[hidden]{display:none}
+  #cookie-banner p{margin:0;flex:1 1 12rem}
+  #cookie-banner a{color:#E4BD6E;text-decoration:underline;text-underline-offset:3px}
+  #cookie-banner button{cursor:pointer;border:0;border-radius:8px;padding:.55rem 1.1rem;font:inherit;font-weight:600;background:#E4BD6E;color:#231C18}
+  #cookie-banner button:focus-visible,#cookie-banner a:focus-visible{outline:2px solid #fff;outline-offset:2px}
+</style>
+<script>
+(function(){
+  var KEY='zahrae_cookies_ok', b=document.getElementById('cookie-banner');
+  try{ if(localStorage.getItem(KEY)) return; }catch(e){}
+  b.hidden=false;
+  document.getElementById('cookie-ok').addEventListener('click',function(){
+    try{ localStorage.setItem(KEY,'1'); }catch(e){}
+    b.hidden=true;
+  });
+})();
+</script>

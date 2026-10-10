@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Erro {{ codigo }} — Zahrae Modas{% endblock %}
+{% block content %}
+<div class="container" style="padding:5rem 1rem;text-align:center;min-height:60vh;display:flex;flex-direction:column;justify-content:center;align-items:center">
+  <span class="eyebrow">Zahrae · Erro {{ codigo }}</span>
+  <h1 style="font-size:clamp(4rem,12vw,8rem);margin:1rem 0;line-height:1">{{ codigo }}</h1>
+  <h2 style="font-size:clamp(1.3rem,3vw,2rem);margin-bottom:1rem">{{ titulo }}</h2>
+  <p style="max-width:520px;line-height:1.7;margin-bottom:2rem">{{ mensagem }}</p>
+  <a class="btn btn-gold" href="{{ url_for('index') }}">Voltar para a página inicial</a>
+</div>
+{% endblock %}

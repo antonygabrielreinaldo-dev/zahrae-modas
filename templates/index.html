@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% from "_card.html" import card %}
+{% block content %}
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">Elegância que prospera</span>
+      <h1 style="margin-top:.9rem">Peças para <em>brilhar</em> em cada ocasião.</h1>
+      <p class="lead">Vestidos, blusas, saias e alfaiataria escolhidos com carinho para o seu dia a dia — do trabalho ao jantar, com todo o conforto que você merece.</p>
+      <div class="hero-cta">
+        <a class="btn btn-gold" href="{{ url_for('categoria', categoria='lancamentos') }}">Ver lançamentos</a>
+        <a class="btn btn-ghost" href="{{ url_for('categoria', categoria='ofertas') }}">Ofertas da semana</a>
+      </div>
+    </div>
+    <div class="hero-art" role="img" aria-label="Estrela dourada e o nome Zahrae, símbolo da loja" data-photo="{{ url_for('static', filename='img/hero.jpg') }}">
+      <div class="star-stage" aria-hidden="true">
+        <span class="star-glow"></span>
+        <img class="star-fallback" src="{{ url_for('static', filename='img/logo-star.png') }}" alt="" width="300" height="312">
+        <img class="word-fallback" src="{{ url_for('static', filename='img/logo-wordmark.png') }}" alt="" width="600" height="99">
+        <canvas id="star3d" data-word="{{ url_for('static', filename='img/logo-wordmark-3d.png') }}"></canvas>
+        <span class="spark s1"></span><span class="spark s2"></span><span class="spark s3"></span><span class="spark s4"></span><span class="spark s5"></span>
+      </div>
+      <div class="hero-tag"><strong>6x</strong><span>sem juros<br>em toda a loja</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="benefits" aria-label="Vantagens">
+  <div class="container">
+    <ul>
+      <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><div><b>Até 6x sem juros</b><span>No cartão de crédito</span></div></li>
+      <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.7-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg><div><b>Compra pelo WhatsApp</b><span>Atendimento rápido e pessoal</span></div></li>
+      <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg><div><b>Troca facilitada</b><span>Veja nossa política</span></div></li>
+      <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg><div><b>Peças selecionadas</b><span>Qualidade em cada detalhe</span></div></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">Explore</span><h2>Compre por categoria</h2></div>
+    </div>
+    <div class="cat-grid">
+      {% for slug, nome in (categorias.items()|list)[:6] %}
+      <a class="cat-tile reveal" href="{{ url_for('categoria', categoria=slug) }}">
+        <span class="dot" aria-hidden="true">{{ nome[0] }}</span>{{ nome }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">Acabou de chegar</span><h2>Lançamentos</h2></div>
+      <a class="link-arrow" href="{{ url_for('categoria', categoria='lancamentos') }}">Ver todos <span class="arr" aria-hidden="true">→</span></a>
+    </div>
+    {% if lancamentos %}
+    <div class="grid">{% for p in lancamentos %}{{ card(p, whatsapp_numero) }}{% endfor %}</div>
+    {% else %}
+    <div class="empty"><h2>Novidades a caminho</h2><p>Em breve, novas peças por aqui.</p></div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="banner reveal">
+      <div>
+        <span class="eyebrow" style="color:#E4BD6E">Atendimento exclusivo</span>
+        <h2 style="margin-top:.6rem">Encontrou a peça ideal? Finalize pelo WhatsApp.</h2>
+        <p>Tire dúvidas sobre tamanho, tecido e disponibilidade direto com a nossa equipe.</p>
+      </div>
+      <a class="btn btn-gold" href="https://wa.me/{{ whatsapp_numero }}" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-head reveal">
+      <div><span class="eyebrow">Preços especiais</span><h2>Ofertas</h2></div>
+      <a class="link-arrow" href="{{ url_for('categoria', categoria='ofertas') }}">Ver todas <span class="arr" aria-hidden="true">→</span></a>
+    </div>
+    {% if ofertas %}
+    <div class="grid">{% for p in ofertas %}{{ card(p, whatsapp_numero) }}{% endfor %}</div>
+    {% else %}
+    <div class="empty"><h2>Sem ofertas no momento</h2><p>Volte em breve para conferir.</p></div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+<script src="{{ url_for('static', filename='js/star3d.js') }}" defer></script>
+{% endblock %}

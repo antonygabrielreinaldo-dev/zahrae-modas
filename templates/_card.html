@@ -1,0 +1,22 @@
+{% macro card(p, whatsapp_numero) %}
+<article class="card reveal">
+  <a class="card-media" href="{{ url_for('produto', product_id=p.id) }}" tabindex="-1" aria-hidden="true">
+    <img src="{{ url_for('static', filename=p.image_path) }}" alt="" loading="lazy" width="600" height="800"
+         onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/placeholder.svg') }}'">
+    {% if p.badge %}<span class="badge {{ 'off' if p.badge.startswith('-') }}">{{ p.badge }}</span>{% endif %}
+    {% if p.stock == 0 %}<span class="badge out">Esgotado</span>{% endif %}
+  </a>
+  <div class="card-body">
+    <span class="card-cat">{{ nome_categoria(p.category) }}</span>
+    <h3 class="card-title"><a href="{{ url_for('produto', product_id=p.id) }}">{{ p.name }}</a></h3>
+    <div class="price-row">
+      <span class="price">{{ p.price|brl }}</span>
+      {% if p.old_price %}<span class="price-old"><span class="sr-only">de </span>{{ p.old_price|brl }}</span>{% endif %}
+    </div>
+    {% if p.installments and p.installments > 1 %}
+    <span class="installment">ou {{ p.installments }}x de {{ p.installment_value|brl }} sem juros</span>
+    {% endif %}
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('produto', product_id=p.id) }}">Ver peça<span class="sr-only">: {{ p.name }}</span></a>
+  </div>
+</article>
+{% endmacro %}

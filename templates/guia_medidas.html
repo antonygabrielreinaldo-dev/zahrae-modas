@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Guia de medidas — Zahrae Modas{% endblock %}
+{% block content %}
+<div class="container"><div class="page-head"><nav class="breadcrumb"><a href="{{ url_for('index') }}">Início</a> / Guia de medidas</nav><h1>Guia de medidas</h1><p>Medidas do corpo em centímetros. Em dúvida entre dois tamanhos, escolha o maior ou chame a gente.</p></div>
+<div class="table-wrap" style="margin-bottom:4rem">
+  <table class="size-table">
+    <caption class="sr-only">Tabela de tamanhos femininos</caption>
+    <thead><tr><th scope="col">Tamanho</th><th scope="col">Busto</th><th scope="col">Cintura</th><th scope="col">Quadril</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">P</th><td>82–86</td><td>62–66</td><td>88–92</td></tr>
+      <tr><th scope="row">M</th><td>87–91</td><td>67–71</td><td>93–97</td></tr>
+      <tr><th scope="row">G</th><td>92–96</td><td>72–76</td><td>98–102</td></tr>
+      <tr><th scope="row">GG</th><td>97–102</td><td>77–82</td><td>103–108</td></tr>
+    </tbody>
+  </table>
+</div></div>
+{% endblock %}

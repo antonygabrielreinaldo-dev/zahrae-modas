@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_card.html" import card %}
+{% block title %}{{ titulo }} — Zahrae Modas{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <nav class="breadcrumb" aria-label="Você está em"><a href="{{ url_for('index') }}">Início</a> / {{ titulo }}</nav>
+    <h1>{{ titulo }}</h1>
+    <p>{{ resultados|length }} {{ 'peça encontrada' if resultados|length == 1 else 'peças encontradas' }}</p>
+    <div class="chips" role="list" aria-label="Filtrar por categoria">
+      <a class="chip" role="listitem" href="{{ url_for('categoria', categoria='lancamentos') }}" {% if categoria == 'lancamentos' %}aria-current="page"{% endif %}>Lançamentos</a>
+      {% for slug, nome in categorias.items() %}
+      <a class="chip" role="listitem" href="{{ url_for('categoria', categoria=slug) }}" {% if categoria == slug %}aria-current="page"{% endif %}>{{ nome }}</a>
+      {% endfor %}
+      <a class="chip" role="listitem" href="{{ url_for('categoria', categoria='ofertas') }}" {% if categoria == 'ofertas' %}aria-current="page"{% endif %}>Ofertas</a>
+    </div>
+  </div>
+
+  {% if resultados %}
+  <div class="grid" style="padding-bottom:4rem">{% for p in resultados %}{{ card(p, whatsapp_numero) }}{% endfor %}</div>
+  {% else %}
+  <div class="empty" style="margin-bottom:4rem">
+    <h2>Nenhuma peça por aqui ainda</h2>
+    <p>{% if q %}Tente outra palavra, como “vestido” ou “jeans”.{% else %}Estamos preparando novidades para esta categoria.{% endif %}</p>
+    <a class="btn btn-gold" href="{{ url_for('index') }}">Voltar para a loja</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

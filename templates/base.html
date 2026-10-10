@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Zahrae Modas — Moda feminina{% endblock %}</title>
+  <meta name="description" content="{% block desc %}Zahrae Modas: moda feminina com elegância e conforto. Vestidos, blusas, saias, jeans e muito mais. Compre pelo WhatsApp.{% endblock %}">
+  <meta name="theme-color" content="#231C18">
+  <script>document.documentElement.classList.add('js');setTimeout(function(){if(!document.documentElement.classList.contains('ready'))document.documentElement.classList.add('failsafe')},2500)</script>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+  <div class="announce">Parcele em até 6x sem juros &nbsp;·&nbsp; Compre pelo WhatsApp e receba atendimento personalizado</div>
+
+  <header class="header">
+    <div class="container header-row">
+      <button class="icon-btn menu-toggle" aria-label="Abrir menu" aria-expanded="false" aria-controls="menu" type="button">
+        <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+      <a class="logo" href="{{ url_for('index') }}" aria-label="Zahrae Modas — página inicial">
+        <img class="logo-star" src="{{ url_for('static', filename='img/logo-star.png') }}" alt="" width="38" height="38">
+        <img class="logo-word" src="{{ url_for('static', filename='img/logo-wordmark.png') }}" alt="Zahrae Modas" width="170" height="28">
+      </a>
+
+      <form class="search" action="{{ url_for('busca') }}" method="get" role="search">
+        <label class="sr-only" for="q">Buscar produtos</label>
+        <input id="q" type="search" name="q" placeholder="Busque vestidos, blusas, saias…" value="{{ q or '' }}" autocomplete="off">
+        <button class="search-clear" type="button" aria-label="Limpar busca"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        <button type="submit" aria-label="Buscar">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        </button>
+      </form>
+
+      <div class="header-actions">
+        <a class="icon-btn" data-tip="WhatsApp" href="https://wa.me/{{ whatsapp_numero }}" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.7-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
+        </a>
+        {% if current_user.is_authenticated %}
+        <a class="icon-btn" data-tip="Painel" href="{{ url_for('admin_produtos') }}" aria-label="Painel do administrador">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <nav class="nav" id="menu" aria-label="Categorias">
+      <div class="container">
+        <ul>
+          <li><a href="{{ url_for('index') }}" {% if request.endpoint == 'index' %}aria-current="page"{% endif %}>Início</a></li>
+          <li><a href="{{ url_for('categoria', categoria='lancamentos') }}" {% if categoria == 'lancamentos' %}aria-current="page"{% endif %}>Lançamentos</a></li>
+          {% for slug, nome in categorias.items() %}
+          <li><a href="{{ url_for('categoria', categoria=slug) }}" {% if categoria == slug %}aria-current="page"{% endif %}>{{ nome }}</a></li>
+          {% endfor %}
+          <li><a class="hot" href="{{ url_for('categoria', categoria='ofertas') }}" {% if categoria == 'ofertas' %}aria-current="page"{% endif %}>Ofertas</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  {% if request.endpoint and request.endpoint != 'index' %}
+  <div class="subbar">
+    <div class="container">
+      <a class="back-btn" href="{{ url_for('index') }}" data-back>
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Voltar
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  {% with mensagens = get_flashed_messages(with_categories=true) %}
+  {% if mensagens %}
+  <div class="container flashes" role="status">
+    {% for tipo, msg in mensagens %}
+    <div class="flash {{ tipo }}"><span>{{ msg }}</span>
+      <button class="flash-close" type="button" aria-label="Fechar aviso"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <main id="conteudo">{% block content %}{% endblock %}</main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <a class="footer-logo" href="{{ url_for('index') }}"><img src="{{ url_for('static', filename='img/logo-full.png') }}" alt="Zahrae Modas — Elegância que prospera." width="220" height="138" loading="lazy"></a>
+        <p>Moda feminina pensada para mulheres que gostam de se sentir bem em cada detalhe.</p>
+      </div>
+      <div>
+        <h3>Comprar</h3>
+        <ul>
+          <li><a href="{{ url_for('categoria', categoria='lancamentos') }}">Lançamentos</a></li>
+          <li><a href="{{ url_for('categoria', categoria='vestidos') }}">Vestidos</a></li>
+          <li><a href="{{ url_for('categoria', categoria='jeans') }}">Jeans</a></li>
+          <li><a href="{{ url_for('categoria', categoria='ofertas') }}">Ofertas</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Ajuda</h3>
+        <ul>
+          <li><a href="{{ url_for('guia_medidas') }}">Guia de medidas</a></li>
+          <li><a href="{{ url_for('trocas') }}">Trocas e devoluções</a></li>
+          <li><a href="{{ url_for('sobre') }}">Sobre a Zahrae</a></li>
+          <li><a href="{{ url_for('privacidade') }}">Privacidade</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Atendimento</h3>
+        <ul>
+          <li><a href="https://wa.me/{{ whatsapp_numero }}" target="_blank" rel="noopener">WhatsApp</a></li>
+          <li><a href="https://www.instagram.com/zahraemodas/" target="_blank" rel="noopener">Instagram @zahraemodas</a></li>
+          <li><a href="{{ url_for('login') }}">Área do lojista</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© {{ ano_atual }} Zahrae Modas. Todos os direitos reservados.</span>
+      <span>Manaus · Amazonas</span>
+    </div>
+  </footer>
+
+  <a class="wa-float" data-tip="Fale com a loja" data-tip-pos="left" href="https://wa.me/{{ whatsapp_numero }}?text={{ 'Olá! Gostaria de saber mais sobre as peças da Zahrae Modas.'|urlencode }}" target="_blank" rel="noopener" aria-label="Chamar no WhatsApp">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.7-5.2A8.5 8.5 0 1 1 21 11.5z"/><path d="M9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 .8c-1-.4-2-1.4-2.4-2.4l.8-1-1-2z"/></svg>
+  </a>
+  <button class="to-top" type="button" aria-label="Voltar ao topo">
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <div class="toast-region" id="toasts" role="status" aria-live="polite"></div>
+
+  <dialog class="dialog" id="confirm" aria-labelledby="confirm-title">
+    <div class="dialog-body">
+      <h2 id="confirm-title">Tem certeza?</h2>
+      <p id="confirm-text"></p>
+      <div class="actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-dlg="cancel">Cancelar</button>
+        <button class="btn btn-danger btn-sm" type="button" data-dlg="ok" id="confirm-ok">Excluir</button>
+      </div>
+    </div>
+  </dialog>
+
+  {% include "_cookies.html" %}
+
+  <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

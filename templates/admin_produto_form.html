@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if produto else 'Novo' }} produto — Admin Zahrae{% endblock %}
+{% block content %}
+{% macro val(campo, atual='') %}{{ dados[campo] if dados else atual }}{% endmacro %}
+<div class="container">
+  <form class="form-card wide" method="post" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h1>{{ 'Editar produto' if produto else 'Novo produto' }}</h1>
+    <p class="sub">Campos com * são obrigatórios.</p>
+
+    <div class="field">
+      <label for="name">Nome da peça *</label>
+      <input id="name" name="name" required value="{{ val('name', produto.name if produto else '') }}">
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="category">Categoria *</label>
+        {% set cat = (dados.category if dados else (produto.category if produto else '')) %}
+        <select id="category" name="category" required>
+          <option value="">Escolha…</option>
+          {% for slug, nome in categorias.items() %}<option value="{{ slug }}" {{ 'selected' if cat == slug }}>{{ nome }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="badge">Selo</label>
+        <input id="badge" name="badge" maxlength="30" value="{{ val('badge', produto.badge if produto else '') }}">
+        <span class="hint">Use “Novo” para aparecer em Lançamentos, ou “-20%” etc.</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="description">Descrição</label>
+      <textarea id="description" name="description">{{ val('description', produto.description if produto else '') }}</textarea>
+    </div>
+
+    <div class="row-3">
+      <div class="field">
+        <label for="price">Preço (R$) *</label>
+        <input id="price" name="price" inputmode="decimal" required value="{{ ('%.2f' % (dados.price_cents/100) if dados else ('%.2f' % produto.price if produto else '')) }}">
+      </div>
+      <div class="field">
+        <label for="old_price">Preço “de” (R$)</label>
+        <input id="old_price" name="old_price" inputmode="decimal" value="{{ ('%.2f' % (dados.old_price_cents/100) if dados and dados.old_price_cents else ('%.2f' % produto.old_price if produto and produto.old_price else '')) }}">
+        <span class="hint">Preencha para entrar em Ofertas.</span>
+      </div>
+      <div class="field">
+        <label for="installments">Parcelas</label>
+        <input id="installments" name="installments" type="number" min="1" max="12" value="{{ val('installments', produto.installments if produto else 1) }}">
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="field">
+        <label for="stock">Estoque</label>
+        <input id="stock" name="stock" type="number" min="0" value="{{ val('stock', produto.stock if produto else 0) }}">
+      </div>
+      <div class="field">
+        <label for="foto">Foto (JPG, PNG ou WebP, até 8 MB)</label>
+        <input id="foto" name="foto" type="file" accept=".jpg,.jpeg,.png,.webp">
+        <span class="hint">Proporção ideal 3:4 (ex.: 900×1200 px).</span>
+      </div>
+    </div>
+
+    <div class="field" id="foto-field" {% if not produto %}hidden{% endif %}>
+      <span class="label-like" id="foto-label">{{ 'Foto atual' if produto else 'Prévia da foto' }}</span>
+      <img class="photo-preview" id="foto-preview" src="{{ url_for('static', filename=produto.image_path) if produto else '' }}" alt="Prévia da foto do produto" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/placeholder.svg') }}'">
+    </div>
+
+    <div class="actions" style="margin-top:1rem">
+      <button class="btn btn-gold" type="submit">Salvar</button>
+      <a class="btn btn-ghost" href="{{ url_for('admin_produtos') }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
