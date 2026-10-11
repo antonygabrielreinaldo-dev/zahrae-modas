@@ -6,4 +6,4 @@ Flask-WTF==1.2.1
 Flask-Limiter==3.6.0
 python-dotenv==1.0.1
 Pillow>=12.0.0,<13
-psycopg2-binary==2.9.6
+psycopg2-binary
