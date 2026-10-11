@@ -37,7 +37,21 @@ limiter = Limiter(
 )
 
 app.config["SECRET_KEY"] = SECRET_KEY
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "zaraeh.db")
+
+#app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "zaraeh.db")
+
+# Lê o URL da base de dados a partir das variáveis de ambiente
+db_url = os.environ.get("DATABASE_URL")
+
+# O SQLAlchemy exige "postgresql://" em vez de "postgres://"
+if db_url and db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+if not db_url:
+    # Se estiver a testar localmente e não tiver a variável, usa o SQLite como recurso (fallback)
+    db_url = "sqlite:///" + os.path.join(BASE_DIR, "zaraeh.db")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # Fotos enviadas pelo painel ficam fora de static/img (que é versionada no Git)
 app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "static", "uploads")
