@@ -1,5 +1,7 @@
 import os
 import uuid
+import cloudinary
+import cloudinary.uploader
 from datetime import datetime
 from functools import wraps
 from urllib.parse import urlparse
@@ -18,11 +20,20 @@ from werkzeug.utils import secure_filename
 
 from models import db, User, Product
 
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"), override=True, encoding="utf-8-sig")
 
+# Configuração do Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
 app = Flask(__name__)
-# Atrás do proxy do PythonAnywhere: pega o IP real (rate limit) e o https
+# Atrás do proxy da Vercel: pega o IP real (rate limit) e o https
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -38,9 +49,7 @@ limiter = Limiter(
 
 app.config["SECRET_KEY"] = SECRET_KEY
 
-#app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(BASE_DIR, "zaraeh.db")
-
-# Lê o URL da base de dados a partir das variáveis de ambiente
+# Lê a URL da base de dados a partir das variáveis de ambiente
 db_url = os.environ.get("DATABASE_URL")
 
 # O SQLAlchemy exige "postgresql://" em vez de "postgres://"
@@ -53,25 +62,20 @@ if not db_url:
 
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-# Fotos enviadas pelo painel ficam fora de static/img (que é versionada no Git)
-app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "static", "uploads")
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8 MB por upload
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("PRODUCTION") == "1"
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
-# formato real da imagem (detectado pelo Pillow) -> extensão salva
 FORMATOS_IMAGEM = {"JPEG": "jpg", "PNG": "png", "WEBP": "webp"}
 Image.MAX_IMAGE_PIXELS = 50_000_000
 
-# Número de WhatsApp da loja (55 = Brasil, 92 = DDD de Manaus), só dígitos.
+# Número de WhatsApp da loja
 WHATSAPP_NUMERO = "".join(ch for ch in os.environ.get("WHATSAPP_NUMERO", "") if ch.isdigit())
 if not WHATSAPP_NUMERO:
     raise RuntimeError("WHATSAPP_NUMERO não configurado (ex.: 5592999999999).")
 
-# A loja agora é 100% feminina: estas são as seções do catálogo.
-# slug -> nome exibido. A ordem aqui é a ordem do menu.
 CATEGORIAS = {
     "vestidos": "Vestidos",
     "blusas": "Blusas",
@@ -147,11 +151,10 @@ def brl(valor):
 
 
 def nome_categoria(slug):
-    """'calcas' -> 'Calças' (usado nos templates, inclusive nas macros importadas)."""
+    """'calcas' -> 'Calças'."""
     return CATEGORIAS.get(slug, (slug or "").replace("-", " ").title())
 
 
-# Global do Jinja: funciona em qualquer template, inclusive em macros importadas
 app.jinja_env.globals["nome_categoria"] = nome_categoria
 app.jinja_env.globals["categorias"] = CATEGORIAS
 app.jinja_env.globals["whatsapp_numero"] = WHATSAPP_NUMERO
@@ -253,10 +256,9 @@ def guia_medidas():
 
 
 # ---------------------------------------------------------------
-# Login (só existe login — não há cadastro público)
+# Login
 # ---------------------------------------------------------------
 def _url_segura(destino):
-    """Aceita só caminhos internos (evita redirecionar para sites externos)."""
     if not destino:
         return None
     partes = urlparse(destino)
@@ -296,7 +298,7 @@ def logout():
 
 
 # ---------------------------------------------------------------
-# Admin: cadastro de produtos
+# Admin: cadastro de produtos e envio via Cloudinary
 # ---------------------------------------------------------------
 def _ler_form_produto(form):
     """Converte os campos de texto do formulário para os tipos certos."""
@@ -333,7 +335,7 @@ def _dados_invalidos(dados):
 
 
 def _remover_foto(produto):
-    """Apaga o arquivo enviado pelo painel (nunca mexe nas fotos de static/img)."""
+    """Auxiliar mantido para limpar arquivos salvos localmente no passado."""
     if produto.image and produto.image.startswith("uploads/"):
         try:
             os.remove(os.path.join(BASE_DIR, "static", produto.image))
@@ -342,7 +344,7 @@ def _remover_foto(produto):
 
 
 def _salvar_foto(produto):
-    """Salva a foto enviada. Retorna False se o arquivo foi enviado mas é inválido."""
+    """Envia a foto enviada pelo formulário para o Cloudinary."""
     arquivo = request.files.get("foto")
     if not arquivo or not arquivo.filename:
         return True
@@ -351,19 +353,28 @@ def _salvar_foto(produto):
     try:
         with Image.open(arquivo.stream) as img:
             formato = img.format
-            img.verify()  # confere se o conteúdo é mesmo uma imagem
+            img.verify()
     except (UnidentifiedImageError, OSError, SyntaxError, Image.DecompressionBombError):
         return False
+
     if formato not in FORMATOS_IMAGEM:
         return False
+
     arquivo.stream.seek(0)
-    # nome único: evita cache do navegador mostrando a foto antiga
-    nome_arquivo = f"produto-{produto.id}-{uuid.uuid4().hex[:8]}.{FORMATOS_IMAGEM[formato]}"
-    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-    arquivo.save(os.path.join(app.config["UPLOAD_FOLDER"], nome_arquivo))
-    _remover_foto(produto)
-    produto.image = f"uploads/{nome_arquivo}"
-    return True
+
+    try:
+        # Upload direto para a nuvem
+        resultado = cloudinary.uploader.upload(
+            arquivo,
+            folder="zahrae_produtos"
+        )
+        _remover_foto(produto)
+        # Guarda o link HTTPS permanente retornado pelo Cloudinary
+        produto.image = resultado.get("secure_url")
+        return True
+    except Exception as e:
+        app.logger.error(f"Erro no upload do Cloudinary: {e}")
+        return False
 
 
 MSG_FOTO_INVALIDA = "A foto não foi aceita. Envie um JPG, PNG ou WebP válido de até 8 MB."
@@ -388,7 +399,7 @@ def admin_produto_novo():
 
         produto = Product(image="placeholder.svg", **dados)
         db.session.add(produto)
-        db.session.commit()  # precisa do id antes de nomear o arquivo da foto
+        db.session.commit()
 
         foto_ok = _salvar_foto(produto)
         db.session.commit()
@@ -439,10 +450,10 @@ def admin_produto_excluir(product_id):
 
 
 # ---------------------------------------------------------------
-# Dados de exemplo (só roupas femininas) + conta de administrador
+# Povoamento e Admin inicial
 # ---------------------------------------------------------------
 def seed_products():
-    """Produtos de exemplo: só com SEED_DEMO=1 (não povoa o site em produção)."""
+    """Produtos de exemplo: só com SEED_DEMO=1."""
     if os.environ.get("SEED_DEMO") != "1" or Product.query.first():
         return
 
@@ -483,7 +494,7 @@ def seed_admin():
     if User.query.filter_by(is_admin=True).first():
         return
 
-    email = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()  # login compara em minúsculas
+    email = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()
     if not email:
         raise RuntimeError("ADMIN_EMAIL não configurado.")
     senha = os.environ.get("ADMIN_PASSWORD")
@@ -494,12 +505,6 @@ def seed_admin():
     admin.set_password(senha)
     db.session.add(admin)
     db.session.commit()
-
-    print("=" * 60)
-    print(" Conta de administrador criada:")
-    print(f"   E-mail: {email}")
-    print(" Troque a senha o quanto antes.")
-    print("=" * 60)
 
 
 with app.app_context():
