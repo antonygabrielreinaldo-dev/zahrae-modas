@@ -33,12 +33,19 @@ cloudinary.config(
 )
 
 app = Flask(__name__)
-# Atrás do proxy da Vercel: pega o IP real (rate limit) e o https
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+# Ajuste do proxy da Vercel para capturar IP, protocolo e host reais
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY não configurada.")
+
+app.config["SECRET_KEY"] = SECRET_KEY
+
+# Configurações para prevenir Erro 400 (CSRF) na Vercel
+app.config["WTF_CSRF_TIME_LIMIT"] = None
+app.config["WTF_CSRF_SSL_STRICT"] = False
+
 csrf = CSRFProtect(app)
 limiter = Limiter(
     key_func=get_remote_address,
@@ -46,8 +53,6 @@ limiter = Limiter(
     default_limits=[],
     storage_uri="memory://",
 )
-
-app.config["SECRET_KEY"] = SECRET_KEY
 
 # Lê a URL da base de dados a partir das variáveis de ambiente
 db_url = os.environ.get("DATABASE_URL")
@@ -363,13 +368,11 @@ def _salvar_foto(produto):
     arquivo.stream.seek(0)
 
     try:
-        # Upload direto para a nuvem
         resultado = cloudinary.uploader.upload(
             arquivo,
             folder="zahrae_produtos"
         )
         _remover_foto(produto)
-        # Guarda o link HTTPS permanente retornado pelo Cloudinary
         produto.image = resultado.get("secure_url")
         return True
     except Exception as e:
