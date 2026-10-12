@@ -6,7 +6,10 @@
     <div><span class="eyebrow">Painel</span><h1 style="font-size:2.6rem">Produtos</h1></div>
     <div class="actions">
       <a class="btn btn-gold" href="{{ url_for('admin_produto_novo') }}">+ Novo produto</a>
-      <a class="btn btn-ghost" href="{{ url_for('logout') }}">Sair</a>
+      <form method="post" action="{{ url_for('logout') }}" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-ghost" type="submit">Sair</button>
+      </form>
     </div>
   </div>
 
@@ -26,6 +29,7 @@
             <div class="actions">
               <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_produto_editar', product_id=p.id) }}">Editar<span class="sr-only"> {{ p.name }}</span></a>
               <form method="post" action="{{ url_for('admin_produto_excluir', product_id=p.id) }}" onsubmit="return confirm('Excluir {{ p.name|e }}? Essa ação não pode ser desfeita.')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-danger btn-sm" type="submit">Excluir<span class="sr-only"> {{ p.name }}</span></button>
               </form>
             </div>

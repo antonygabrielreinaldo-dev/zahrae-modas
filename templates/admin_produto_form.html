@@ -5,6 +5,7 @@
 {% macro val(campo, atual='') %}{{ v.get(campo) if dados else atual }}{% endmacro %}
 <div class="container">
   <form class="form-card wide" method="post" enctype="multipart/form-data" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <h1>{{ 'Editar produto' if produto else 'Novo produto' }}</h1>
     <p class="sub">Campos com * são obrigatórios.</p>
 
