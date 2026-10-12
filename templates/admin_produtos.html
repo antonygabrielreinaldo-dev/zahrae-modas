@@ -6,15 +6,7 @@
     <div><span class="eyebrow">Painel</span><h1 style="font-size:2.6rem">Produtos</h1></div>
     <div class="actions">
       <a class="btn btn-gold" href="{{ url_for('admin_produto_novo') }}">+ Novo produto</a>
-     
-      <form method="post" action="{{ url_for('logout') }}">
-        <input type="hidden" name="csrf_token"
-           value="{{ csrf_token() }}">
-        <button class="btn btn-ghost" type="submit">
-        Sair
-        </button>
-      </form>
-
+      <a class="btn btn-ghost" href="{{ url_for('logout') }}">Sair</a>
     </div>
   </div>
 
@@ -25,7 +17,7 @@
       <tbody>
       {% for p in produtos %}
         <tr>
-          <td><img src="{{ url_for('static', filename=p.image_path) }}" alt="" loading="lazy" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/placeholder.svg') }}'"></td>
+          <td><img src="{{ p.image if p.image and p.image.startswith('http') else url_for('static', filename='img/' ~ p.image) }}" alt="" loading="lazy" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/placeholder.svg') }}'"></td>
           <td><strong>{{ p.name }}</strong>{% if p.badge %}<br><small>{{ p.badge }}</small>{% endif %}</td>
           <td>{{ nome_categoria(p.category) }}</td>
           <td>{{ p.price|brl }}</td>
@@ -33,8 +25,7 @@
           <td>
             <div class="actions">
               <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_produto_editar', product_id=p.id) }}">Editar<span class="sr-only"> {{ p.name }}</span></a>
-              <form method="post" action="{{ url_for('admin_produto_excluir', product_id=p.id) }}" data-confirm="Excluir “{{ p.name }}”? Essa ação não pode ser desfeita.">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <form method="post" action="{{ url_for('admin_produto_excluir', product_id=p.id) }}" onsubmit="return confirm('Excluir {{ p.name|e }}? Essa ação não pode ser desfeita.')">
                 <button class="btn btn-danger btn-sm" type="submit">Excluir<span class="sr-only"> {{ p.name }}</span></button>
               </form>
             </div>

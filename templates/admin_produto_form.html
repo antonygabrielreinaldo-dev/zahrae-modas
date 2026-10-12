@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block title %}{{ 'Editar' if produto else 'Novo' }} produto — Admin Zahrae{% endblock %}
 {% block content %}
-{% macro val(campo, atual='') %}{{ dados[campo] if dados else atual }}{% endmacro %}
+{% set v = dados or {} %}
+{% macro val(campo, atual='') %}{{ v.get(campo) if dados else atual }}{% endmacro %}
 <div class="container">
   <form class="form-card wide" method="post" enctype="multipart/form-data" novalidate>
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <h1>{{ 'Editar produto' if produto else 'Novo produto' }}</h1>
     <p class="sub">Campos com * são obrigatórios.</p>
 
@@ -62,10 +62,11 @@
       </div>
     </div>
 
-    <div class="field" id="foto-field" {% if not produto %}hidden{% endif %}>
-      <span class="label-like" id="foto-label">{{ 'Foto atual' if produto else 'Prévia da foto' }}</span>
-      <img class="photo-preview" id="foto-preview" src="{{ url_for('static', filename=produto.image_path) if produto else '' }}" alt="Prévia da foto do produto" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/placeholder.svg') }}'">
+    {% if produto %}
+    <div class="field"><span style="font-weight:600;font-size:.9rem">Foto atual</span>
+      <img class="photo-preview" src="{{ produto.image if produto.image and produto.image.startswith('http') else url_for('static', filename='img/' ~ produto.image) }}" alt="Foto atual de {{ produto.name }}" onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/placeholder.svg') }}'">
     </div>
+    {% endif %}
 
     <div class="actions" style="margin-top:1rem">
       <button class="btn btn-gold" type="submit">Salvar</button>
