@@ -486,21 +486,24 @@ def seed_products():
 
 
 def seed_admin():
-    if User.query.filter_by(is_admin=True).first():
+    """Cria ou atualiza a conta de administrador com base nas variáveis de ambiente."""
+    email = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()
+    senha = os.environ.get("ADMIN_PASSWORD")
+    if not email or not senha:
         return
 
-    email = (os.environ.get("ADMIN_EMAIL") or "").strip().lower()
-    if not email:
-        raise RuntimeError("ADMIN_EMAIL não configurado.")
-    senha = os.environ.get("ADMIN_PASSWORD")
-    if not senha:
-        raise RuntimeError("ADMIN_PASSWORD não configurada.")
-
-    admin = User(name="Administrador", email=email, is_admin=True)
-    admin.set_password(senha)
-    db.session.add(admin)
-    db.session.commit()
-
+    admin = User.query.filter_by(is_admin=True).first()
+    if admin:
+        # Atualiza a conta existente na base de dados com as novas credenciais
+        admin.email = email
+        admin.set_password(senha)
+        db.session.commit()
+    else:
+        # Cria a conta do zero se ainda não existir
+        admin = User(name="Administrador", email=email, is_admin=True)
+        admin.set_password(senha)
+        db.session.add(admin)
+        db.session.commit()
 
 with app.app_context():
     db.create_all()
