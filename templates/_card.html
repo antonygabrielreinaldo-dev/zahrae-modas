@@ -1,7 +1,7 @@
 {% macro card(p, whatsapp_numero) %}
-<article class="card reveal">
+<article class="card">
   <a class="card-media" href="{{ url_for('produto', product_id=p.id) }}" tabindex="-1" aria-hidden="true">
-    <img src="{{ url_for('static', filename=p.image_path) }}" alt="" loading="lazy" width="600" height="800"
+    <img src="{{ p.image if p.image and p.image.startswith('http') else url_for('static', filename='img/' ~ p.image) }}" alt="" loading="lazy" width="600" height="800"
          onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/placeholder.svg') }}'">
     {% if p.badge %}<span class="badge {{ 'off' if p.badge.startswith('-') }}">{{ p.badge }}</span>{% endif %}
     {% if p.stock == 0 %}<span class="badge out">Esgotado</span>{% endif %}
