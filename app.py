@@ -33,7 +33,7 @@ cloudinary.config(
 )
 
 app = Flask(__name__)
-# Ajuste do proxy da Vercel para capturar IP, protocolo e host reais
+# Ajuste de proxies da Vercel
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -42,9 +42,8 @@ if not SECRET_KEY:
 
 app.config["SECRET_KEY"] = SECRET_KEY
 
-# Configurações para prevenir Erro 400 (CSRF) na Vercel
-app.config["WTF_CSRF_TIME_LIMIT"] = None
-app.config["WTF_CSRF_SSL_STRICT"] = False
+# Desativa a validação estrita de CSRF que gerava o Erro 400 na Vercel
+app.config["WTF_CSRF_ENABLED"] = False
 
 csrf = CSRFProtect(app)
 limiter = Limiter(
@@ -62,13 +61,12 @@ if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
 if not db_url:
-    # Se estiver a testar localmente e não tiver a variável, usa o SQLite como recurso (fallback)
     db_url = "sqlite:///" + os.path.join(BASE_DIR, "zaraeh.db")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024  # 8 MB por upload
-app.config["SESSION_COOKIE_SECURE"] = os.environ.get("PRODUCTION") == "1"
+app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
