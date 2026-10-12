@@ -42,7 +42,7 @@ if not SECRET_KEY:
 
 app.config["SECRET_KEY"] = SECRET_KEY
 
-# Desativa a validação estrita de CSRF que gerava o Erro 400 na Vercel
+# Desativa a validação estrita de CSRF para prevenir Erro 400 na Vercel
 app.config["WTF_CSRF_ENABLED"] = False
 
 csrf = CSRFProtect(app)
@@ -259,7 +259,7 @@ def guia_medidas():
 
 
 # ---------------------------------------------------------------
-# Login
+# Login / Logout (Aceita GET e POST)
 # ---------------------------------------------------------------
 def _url_segura(destino):
     if not destino:
@@ -292,8 +292,7 @@ def login():
     return render_template("login.html")
 
 
-@app.route("/logout", methods=["POST"])
-@login_required
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
     logout_user()
     flash("Você saiu da sua conta.", "sucesso")
@@ -304,7 +303,6 @@ def logout():
 # Admin: cadastro de produtos e envio via Cloudinary
 # ---------------------------------------------------------------
 def _ler_form_produto(form):
-    """Converte os campos de texto do formulário para os tipos certos."""
     def reais_para_centavos(valor):
         valor = (valor or "").strip().replace(",", ".")
         if not valor:
@@ -338,7 +336,6 @@ def _dados_invalidos(dados):
 
 
 def _remover_foto(produto):
-    """Auxiliar mantido para limpar arquivos salvos localmente no passado."""
     if produto.image and produto.image.startswith("uploads/"):
         try:
             os.remove(os.path.join(BASE_DIR, "static", produto.image))
@@ -347,7 +344,6 @@ def _remover_foto(produto):
 
 
 def _salvar_foto(produto):
-    """Envia a foto enviada pelo formulário para o Cloudinary."""
     arquivo = request.files.get("foto")
     if not arquivo or not arquivo.filename:
         return True
@@ -454,7 +450,6 @@ def admin_produto_excluir(product_id):
 # Povoamento e Admin inicial
 # ---------------------------------------------------------------
 def seed_products():
-    """Produtos de exemplo: só com SEED_DEMO=1."""
     if os.environ.get("SEED_DEMO") != "1" or Product.query.first():
         return
 
@@ -491,7 +486,6 @@ def seed_products():
 
 
 def seed_admin():
-    """Cria a conta de administrador se ainda não existir nenhuma."""
     if User.query.filter_by(is_admin=True).first():
         return
 
