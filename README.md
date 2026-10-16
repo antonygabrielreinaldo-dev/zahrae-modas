@@ -1,25 +1,39 @@
-# Zahrae Modas — Catálogo feminino 
-Catálogo 100% moda feminina, com compra pelo WhatsApp e painel do lojista.
+# Zahrae Modas — Catálogo Feminino
 
-## Rodar
-```
-py -m venv venv
-.\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-py app.py
-```
+Catálogo 100% focado em moda feminina, com finalização de pedidos via WhatsApp, arquitetura em nuvem (Vercel + Neon PostgreSQL + Cloudinary) e painel administrativo completo para gestão de produtos.
 
-## Fotos
-Coloque em `static/img/`: `produto-1.jpg`… (proporção 3:4) e `hero.jpg` (foto da home, opcional — formato vertical 4:5).
-Pelo admin (`/admin/produtos`) o upload já nomeia o arquivo sozinho.
+---
 
-## Segurança
+## 🛠️ Tecnologias Utilizadas
 
-## Logo
-Os arquivos do logo estão em `static/img/` (`logo-full.png`, `logo-wordmark.png`, `logo-star.png`, `favicon.png`). Todas as páginas internas têm o botão **Voltar**, e o menu tem **Início**.
+* **Backend:** Python / Flask
+* **Banco de Dados:** PostgreSQL (Neon DB)
+* **Hospedagem & Deployment:** Vercel (Serverless Functions)
+* **Armazenamento de Imagens:** Cloudinary (upload dinâmico na nuvem)
+* **Autenticação e Segurança:** Flask-Login, Flask-Limiter, ProxyFix, Werkzeug
+* **Interface & UX:** HTML5, CSS3, JavaScript (Three.js para elementos 3D), animações microinterativas
 
-## Movimento e microinterações
-Linguagem única: elementos "sobem e assentam" (ease-out), hover eleva 2–3px, clique afunda 1px com ondulação, entradas ao rolar têm stagger.
-Tudo respeita "reduzir movimento". Itens: botões com 6 estados (incl. loading), campos com foco/preenchido/erro, menu mobile animado, diálogo de confirmação, toasts, barra de progresso ao navegar, transição entre páginas, zoom na foto do produto, botão voltar ao topo.
-A estrela e o nome ZAHRAE em 3D ficam em `static/js/star3d.js` (textura `static/img/logo-wordmark-3d.png`).
+---
 
+## 🔑 Variáveis de Ambiente (Vercel)
+
+Configuradas no painel da Vercel em **Settings > Environment Variables** (aplicadas para **Production**, **Preview** e **Development**):
+
+```env
+# Configurações do Flask
+SECRET_KEY=sua_chave_secreta
+DEBUG=0
+PRODUCTION=1
+
+# Banco de Dados (Neon PostgreSQL)
+DATABASE_URL=postgresql://usuario:senha@ep-xyz.us-east-2.aws.neon.tech/neondb?sslmode=require
+
+# Loja & Administrador
+WHATSAPP_NUMERO=5592999999999  # Apenas números com DDD
+ADMIN_EMAIL=seu_email@dominio.com
+ADMIN_PASSWORD=sua_senha_segura
+
+# Cloudinary (Hospedagem de Imagens)
+CLOUDINARY_CLOUD_NAME=seu_cloud_name
+CLOUDINARY_API_KEY=sua_api_key
+CLOUDINARY_API_SECRET=seu_api_secret
