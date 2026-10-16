@@ -1,5 +1,4 @@
-# Zahrae Modas — Catálogo feminino (Flask)
-
+# Zahrae Modas — Catálogo feminino 
 Catálogo 100% moda feminina, com compra pelo WhatsApp e painel do lojista.
 
 ## Rodar
@@ -9,10 +8,6 @@ py -m venv venv
 pip install -r requirements.txt
 py app.py
 ```
-
-## Já tem o banco antigo (zaraeh.db)?
-Copie seu `zaraeh.db` para esta pasta e rode **uma vez**: `py migrar_para_feminino.py`
-(ele remove produtos masculinos/infantis após confirmação e reclassifica o resto).
 
 ## Fotos
 Coloque em `static/img/`: `produto-1.jpg`… (proporção 3:4) e `hero.jpg` (foto da home, opcional — formato vertical 4:5).
